@@ -131,4 +131,4 @@ GUI tests require a display and exercise real Tk mouse events for marker draggin
 the native file-drop callback, controls, undo/redo, exports and autosave recovery.
 No physical device is opened. See [validation](docs/VALIDATION.md).
 
-Private local source. No remote and no publication workflow.
+Private source repository. No automated publication workflow.
