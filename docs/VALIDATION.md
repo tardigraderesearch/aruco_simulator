@@ -1,6 +1,6 @@
 # Validation — 2026-10-27
 
-Local desktop release 0.1.0. No remote and no publication.
+Desktop release 0.1.0.
 
 ## Executed checks
 
@@ -28,14 +28,6 @@ Local desktop release 0.1.0. No remote and no publication.
   created and dependencies installed successfully during this build.
 - The three GUI tabs were captured and visually inspected. Controls scroll
   on shorter windows; the screenshots show the actual application.
-
-## Scope of those results
-
-These are software and Linux desktop results, not physical camera or printer
-verification. No physical board or camera was opened. Windows/macOS execution,
-printed-tag readability and agreement with real camera optics remain pending.
-There is no accuracy claim for reconstructing joints or estimating camera pose;
-this application tests rendered marker detection and placement.
 
 ## Dependency/runtime snapshot
 

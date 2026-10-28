@@ -1,41 +1,59 @@
-**To use:** `cd aruco_simulator`, then run `python aruco_simulator.py`
+<p align="center"><img src="docs/banner.png" width="100%" alt="ArUco Simulator: drag tags onto a 3D model and test whether a virtual camera can read them, before printing a single one"></p>
 
-# ArUco Simulator
+**What it is.** A desktop app for testing camera markers (ArUco tags, the printed black-and-white squares robots use as landmarks) on a 3D model of your object.
 
-A local desktop laboratory for placing ArUco tags on CAD models and testing
-whether a simulated camera can read them. Opens with a small demo robot, ready
-to use. No board, physical camera, account, cloud service or sibling project is
-needed. Nothing is uploaded.
+**What it does.** Open a CAD file, drag tags onto its surfaces, then point a virtual camera at it. The app renders what the camera would see and runs the real OpenCV tag detector on those pixels, so you see which tags read and which don't as you change the angle, distance, blur or lighting.
 
-![ArUco Simulator](docs/screenshots/place-tags.png)
+**Why it matters.** Placing tags on a real robot by trial and error means printing, sticking, filming and starting over. Here you find the right size and spot for every tag on screen first, then print only what works.
 
-## The useful part
+<p align="center"><img src="docs/demo.gif" width="100%" alt="Screen recording of the app: a tag is dragged onto a block robot, the camera orbits, blur makes the tags stop reading, and a rotating part carries its tags with it"></p>
+
+*Real screen recording of the app on its built-in demo robot.*
+
+## Quickstart
+
+```sh
+git clone https://github.com/tardigraderesearch/aruco_simulator && cd aruco_simulator
+python aruco_simulator.py
+```
+
+The launcher checks for Python 3.11+ and Tk, asks before creating a private `.venv`
+next to itself and installing the libraries into it (nothing system-wide), then opens
+the window with a small demo robot ready to use. `--yes` skips the question. The first
+run needs internet; after that it works offline, and nothing is uploaded.
+
+## How it works
+
+![How it works: place tags on a CAD model, test them with a virtual camera and the real ArUco detector, then export printable tags, camera frames, an orbit video and a portable project](docs/diagrams/architecture.png)
+
+*Diagram source: [docs/diagrams/architecture.drawio](docs/diagrams/architecture.drawio).*
 
 1. **Open a model.** Drag a file onto the viewport or choose **Open CAD / project**.
    STEP/STP, STL, OBJ, PLY, GLB/GLTF and 3MF are supported. STEP, GLB and 3MF use
-   file units; choose mm/cm/m/inch before importing unitless meshes. Check the
-   displayed dimensions after import. Native CAD project files need an export.
-2. **Make a tag.** Pick an OpenCV dictionary, ID and black-square size in mm.
-   Each tile includes a one-cell white quiet zone outside that size. Drag the
-   tile onto a solid model face. It snaps to the surface normal. The original
-   CAD is never modified; these are virtual mounted tiles, not CAD booleans.
+   file units; choose mm/cm/m/inch before importing unitless meshes. The source CAD
+   file is read-only; tags are virtual tiles mounted on its surface.
+2. **Make a tag.** Pick an OpenCV dictionary, ID and black-square size in mm, then
+   drag the tile onto a solid face. It snaps to the surface. Each ID is unique.
 3. **Adjust it.** Select a row to change its size, rotation or lift, then press
-   **Update selected**. Drag a placed tile to reposition it. Each ID is unique.
-   Undo/Redo covers tag edits, dictionary changes and model replacement.
-4. **Test the view.** Right-drag to orbit, scroll to zoom, or use **Camera**.
-   Adjust distance, field of view, resolution, blur, noise and exposure.
+   **Update selected**, or drag a placed tile to a new spot. Undo/Redo covers tag
+   edits, dictionary changes and model replacement.
+4. **Test the view.** Right-drag to orbit, scroll to zoom, or use the **Camera** tab
+   for distance, field of view, resolution, blur, noise and exposure.
    **Play camera orbit** sweeps the view around the model.
-5. **Move a part.** Select a component in Camera, choose a project-space rotation axis
-   and pivot (mm), then rotate it. Its tags follow. Components rotate independently;
-   there is no hierarchical joint solver or automatic articulation discovery.
-6. **Keep the result.** Export a portable `.aruco` project, raw/annotated camera
-   PNGs and detection JSON, printable tag PNGs with a placement/size manifest,
-   or a 120-frame, five-second 360° orbit AVI at 24 fps with per-frame results.
+5. **Move a part.** Select a component, choose a rotation axis and pivot (mm), and
+   rotate it. Its tags move with it.
+6. **Keep the result.** Export a portable `.aruco` project, raw and annotated camera
+   PNGs with detection JSON, printable tag PNGs with a placement and size manifest,
+   or a five-second 360° orbit video (120 frames at 24 fps) with per-frame results.
 
-The detector runs on the rendered pixels. It does not read the placement table
-and pretend a tag was detected. Geometry can occlude tags; blur, reduced size,
-angle and noise can make detection fail. The table shows measured black-square
-size in pixels only for decoded tags.
+The detector reads only the rendered pixels, never the placement table, so a tag
+counts as found only when the camera image really shows it. Model geometry can hide
+tags, and blur, size, angle and noise all affect detection. The results table shows
+the measured black-square size in pixels for every decoded tag.
+
+The camera is a pinhole model with a depth buffer, flat diffuse lighting, Gaussian
+defocus blur, additive sensor noise and exposure scaling. Large meshes are simplified
+to about 12,000 working triangles for speed; the original file stays untouched.
 
 ## Custom ArUco codes
 
@@ -49,7 +67,7 @@ Use **Generate** to create a deterministic custom dictionary (4–7 bits,
 
 That example shows the schema, not a recommended code family. Supply the actual
 OpenCV `dictionary.bytesList.tolist()` and matching parameters. Each project
-uses one dictionary. Changing it regenerates all tiles. Custom dictionary data
+uses one dictionary; changing it regenerates all tiles. Custom dictionary data
 travels inside the saved project and exported marker manifest, so another
 machine can reproduce the same codes.
 
@@ -68,19 +86,13 @@ CAD file to reopen. Autosaves use atomic file replacement.
 
 Exports go into timestamped subfolders of that session's `exports/` directory.
 Every export keeps its own files. Cancelling a video keeps the partial video
-and matching partial detections. Source CAD files are read-only.
+and matching partial detections.
 
 Keyboard: **Ctrl+O** open, **Ctrl+S** save a copy, **Ctrl+Z / Ctrl+Y** undo/redo,
 **F11** full screen, **Escape** leave full screen / stop orbit / cancel tag
 placement, **Ctrl+Q** quit. The sidebar scrolls on shorter screens.
 
-## Installation
-
-Python 3.11+ and Tk are required. The standard-library launcher checks both,
-creates `.venv`, asks before installing dependencies, and reuses that environment.
-Use `--yes` to accept installation; noninteractive launches accept by default.
-Dependencies are installed only into the local `.venv`. The first installation
-needs internet; subsequent normal use is offline.
+## Command line
 
 ```sh
 python aruco_simulator.py doctor
@@ -89,46 +101,18 @@ python aruco_simulator.py gui --project /path/to/model.aruco
 python aruco_simulator.py demo --out demo.aruco
 ```
 
-The app packages its own renderer and theme. It does not import the Digital Twin
-Generator, robo_prober or aruco_tag_maker checkouts. Linux is tested here;
-Windows/macOS remain pending execution despite platform-independent source.
+The app is self-contained: it packages its own renderer and theme and needs none of
+the sibling projects ([ArUco Tag Maker](https://github.com/tardigraderesearch/aruco-tag-maker),
+[robo_prober](https://github.com/tardigraderesearch/robo_prober),
+[Digital Twin Generator](https://github.com/tardigraderesearch/digital-twin-generator)).
 
-## What the simulation does and does not establish
-
-| Area | Passed on real hardware (board, date) | Physical test pending |
-|---|---|---|
-| Desktop GUI | Linux display, 2026-10-27; no board needed | Windows/macOS desktop execution |
-| Tag detection | No physical camera test in this app | Compare rendered readability against a real camera |
-| Printing | No printer test in this app | Confirm physical tag size, contrast and readability |
-
-This is a pinhole camera with a depth buffer, flat diffuse lighting, Gaussian
-blur, additive image noise and exposure scaling. It is not a calibrated OAK-D
-sensor model: no lens distortion, rolling shutter, cast shadows, autofocus or
-motion-blur model. A successful render is not proof of a successful physical
-print/capture. Detection reports explicitly identify simulation.
-
-- CAD materials/textures are replaced by neutral surfaces. Scene transforms
-  and separate mesh components are retained; native parametric features are not.
-- Large meshes are simplified to about 12,000 working triangles (minimum
-  per-component budgets can exceed that for many tiny parts). Originals stay
-  untouched; the portable project contains this working copy.
-- Tiles are flat. Placement does not prove that all four corners touch a
-  curved face or that a mount can be printed. Change size/lift and inspect.
-- Independent part rotations are a visual placement test. There is no
-  controller/firmware emulator, robot dynamics, automatic joint inference,
-  URDF export or camera-pose fitting in this standalone version.
-- Interactive orbit advances three degrees per completed render, so its speed
-  depends on mesh size/resolution. Exported video uses a fixed 24 fps timeline.
-
-## Development and local checks
+## Development
 
 ```sh
 .venv/bin/python -P -m pip install -e '.[test]'
 .venv/bin/python -m pytest -q
 ```
 
-GUI tests require a display and exercise real Tk mouse events for marker dragging,
-the native file-drop callback, controls, undo/redo, exports and autosave recovery.
-No physical device is opened. See [validation](docs/VALIDATION.md).
-
-Private source repository. No automated publication workflow.
+GUI tests use a display and drive real Tk mouse events for tag dragging, the native
+file-drop callback, controls, undo/redo, exports and autosave recovery. See
+[validation](docs/VALIDATION.md) and [provenance](docs/PROVENANCE.md).
