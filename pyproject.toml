@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aruco-simulator"
+version = "0.1.0"
+description = "Place ArUco tags on CAD models and test a simulated camera locally."
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "networkx>=3", "lxml>=5", "opencv-contrib-python-headless>=4.10,<6", "trimesh>=4.6", "Pillow>=10", "tkinterdnd2>=0.4", "fast-simplification>=0.1.9", "cascadio>=0.0.15"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
